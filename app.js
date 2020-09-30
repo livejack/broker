@@ -35,7 +35,7 @@ const parsed = nopt({
 config.server = parsed.server || 0;
 config.node = parsed.node || 0;
 
-config.servers = Object.keys(config.servers).map(function(val) {
+config.servers = config.servers.map(function(val) {
 	const list = val.split(' ');
 	const hostname = list.shift();
 	const nodes = list.map(function(item) {

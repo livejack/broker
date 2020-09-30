@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# expecting run 1-5
+
+server=${1%-*}
+node=${1#*-}
+
+node $(dirname $0)/../app.js --server $server --node $node
+

@@ -1,25 +1,22 @@
+/* eslint-disable no-console */
 // always resolve paths relative to app.js directory
 process.chdir(__dirname);
 
-var express = require('express');
-var ini = require('./lib/express-ini');
-var format = require('util').format;
-var nopt = require("nopt");
-var URL = require('url');
-var readfile = require('fs').readFileSync;
-var mkdirp = require('mkdirp');
+const express = require('express');
+const ini = require('./lib/express-ini');
+const format = require('util').format;
+const nopt = require("nopt");
+const URL = require('url');
+const readfile = require('fs').readFileSync;
+const mkdirp = require('mkdirp');
 
 // APP
-var app = express();
+const app = express();
 
-var config = ini(app);
-
-ini(app, './private/namespaces.ini');
-ini(app, './private/servers.ini');
+const config = ini(app);
 
 Object.keys(config.namespaces).forEach(function(ns) {
-	var token = config.namespaces[ns];
-	var obj = {
+	const obj = {
 		namespace: ns,
 		token: config.namespaces[ns]
 	};
@@ -31,7 +28,7 @@ Object.keys(config.namespaces).forEach(function(ns) {
 	config.namespaces[ns] = obj;
 });
 
-var parsed = nopt({
+const parsed = nopt({
 	"server" : Number,
 	"node": Number
 });
@@ -39,9 +36,9 @@ config.server = parsed.server || 0;
 config.node = parsed.node || 0;
 
 config.servers = Object.keys(config.servers).map(function(val) {
-	var list = val.split(' ');
-	var hostname = list.shift();
-	var nodes = list.map(function(item) {
+	const list = val.split(' ');
+	const hostname = list.shift();
+	const nodes = list.map(function(item) {
 		var itemUrl = URL.parse(item);
 		return URL.parse(URL.format({
 			hostname: hostname,
@@ -56,7 +53,7 @@ config.site = config.servers[config.server][config.node];
 config.site.port = config.site.port || 80;
 config.listen = config.listen || config.site.port;
 
-var server = config.site.protocol == "https:" ?
+const server = config.site.protocol == "https:" ?
 	require('https').createServer({
 		key:readfile(format('private/%s/privkey.pem', config.site.hostname)),
 		cert:readfile(format('private/%s/fullchain.pem', config.site.hostname))
@@ -64,7 +61,7 @@ var server = config.site.protocol == "https:" ?
 	:
 	require('http').createServer(app);
 
-var acmeRoot = '/.well-known/acme-challenge';
+const acmeRoot = '/.well-known/acme-challenge';
 mkdirp.sync(__dirname + acmeRoot);
 app.use(
 	acmeRoot,
@@ -85,4 +82,3 @@ process.on('uncaughtException', function(err) {
 server.listen(config.listen);
 
 console.log("%s\n%s", process.title, app.settings.site.href);
-

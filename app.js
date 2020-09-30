@@ -5,7 +5,6 @@ process.chdir(__dirname);
 const express = require('express');
 const ini = require('./lib/express-ini');
 const format = require('util').format;
-const nopt = require("nopt");
 const URL = require('url');
 const readfile = require('fs').readFileSync;
 const mkdirp = require('mkdirp');
@@ -28,12 +27,13 @@ Object.keys(config.namespaces).forEach(function(ns) {
 	config.namespaces[ns] = obj;
 });
 
-const parsed = nopt({
-	"server" : Number,
-	"node": Number
-});
-config.server = parsed.server || 0;
-config.node = parsed.node || 0;
+const argv = (process.argv.length == 3 ? process.argv[2] : "0-0")
+	.split('-')
+	.map((x) => parseInt(x));
+if (!argv.length == 2) throw new Error("node app.js <server>-<node>");
+
+config.server = argv[0];
+config.node = argv[1];
 
 config.servers = config.servers.map(function(val) {
 	const list = val.split(' ');

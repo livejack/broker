@@ -25,7 +25,7 @@
   "devDependencies": {
     "@kapouer/eslint-config": "^1.5.1"
   },
-  "main": "lib/express.js",
+  "main": "src/express.js",
   "eslintConfig": {
     "extends": "@kapouer/eslint-config",
     "env": {

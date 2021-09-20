@@ -3,7 +3,7 @@
 process.chdir(__dirname);
 
 const express = require('express');
-const ini = require('./lib/express-ini');
+const ini = require('./src/express-ini');
 const format = require('util').format;
 const URL = require('url');
 const readfile = require('fs').readFileSync;
@@ -72,7 +72,7 @@ app.use(
 	}
 );
 
-require('./lib/express.js')(app, server);
+require('./src/express.js')(app, server);
 
 process.title = format("ws-%s-%d-%d", app.settings.env, config.server, config.node);
 process.on('uncaughtException', function(err) {

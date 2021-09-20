@@ -38,12 +38,12 @@ module.exports = function(app, server) {
 			let interval = config.graphite.interval || 30000;
 			if (interval < 10000) interval = 10000;
 			setInterval(writeStats.bind(null, client, config), interval);
-			console.info("graphite sending to", config.graphite.url, "every", interval, "ms");
+			console.warn("graphite sending to", config.graphite.url, "every", interval, "ms");
 		} else {
 			console.error("graphite expects url, bucket, namespaces");
 		}
 	} else {
-		console.info("no graphite config");
+		console.warn("no graphite config");
 	}
 
 	app.use(express.json());
@@ -74,7 +74,7 @@ module.exports = function(app, server) {
 			].join('.');
 			let pollings = 0;
 			let websockets = 0;
-			for (let k in connected) {
+			for (const k in connected) {
 				if (connected[k].conn.transport.name == "polling") pollings++;
 				else websockets++;
 			}

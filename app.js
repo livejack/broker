@@ -5,7 +5,6 @@ process.chdir(__dirname);
 const express = require('express');
 const ini = require('./src/express-ini');
 const format = require('util').format;
-const URL = require('url');
 const readfile = require('fs').readFileSync;
 const mkdirp = require('mkdirp');
 
@@ -38,13 +37,12 @@ config.node = argv[1];
 config.servers = config.servers.map(function(val) {
 	const list = val.split(' ');
 	const hostname = list.shift();
-	const nodes = list.map(function(item) {
-		var itemUrl = URL.parse(item);
-		return URL.parse(URL.format({
-			hostname: hostname,
-			port: parseInt(itemUrl.path),
-			protocol: itemUrl.protocol || 'http:'
-		}));
+	const nodes = list.map(function (item) {
+		const itemUrl = new URL(`http://${hostname}`);
+		const parts = item.split(':');
+		itemUrl.port = parseInt(parts.pop());
+		if (parts.length > 0) itemUrl.protocol = parts[0];
+		return itemUrl;
 	});
 	return nodes;
 });

@@ -14,7 +14,11 @@ module.exports = function(app, server) {
 		serveClient: true,
 		clientTracking: false,
 		perMessageDeflate: false,
-		allowEIO3: true
+		allowEIO3: true,
+		cors: {
+			origin: true,
+			methods: ["GET", "POST"]
+		}
 	});
 	io.adapter(backlog({ cacheSize: 300, logSize: 1000 }));
 

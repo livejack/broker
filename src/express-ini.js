@@ -14,9 +14,11 @@ module.exports = function(app) {
 	const name = app.settings.name = pkg.name.replace('@', '');
 	app.settings.version = pkg.version;
 	app.settings.dirs = {
-		data: Path.join(xdg.data, name)
+		data: Path.join(xdg.data, name),
+		config: Path.join(xdg.config, name)
 	};
-	const conf = Toml.parse(read(Path.join(xdg.config, name, `${env}.toml`), 'utf-8'));
+	const confFile = Path.join(app.settings.dirs.config, `${env}.toml`);
+	const conf = Toml.parse(read(confFile, 'utf-8'));
 	Object.assign(app.settings, conf);
 	return app.settings;
 };

@@ -53,8 +53,8 @@ config.listen = config.listen || config.site.port;
 
 const server = config.site.protocol == "https:" ?
 	require('https').createServer({
-		key:readfile(format('private/%s/privkey.pem', config.site.hostname)),
-		cert:readfile(format('private/%s/fullchain.pem', config.site.hostname))
+		key:readfile(format(`${config.dirs.config}/%s/privkey.pem`, config.site.hostname)),
+		cert:readfile(format(`${config.dirs.config}/%s/fullchain.pem`, config.site.hostname))
 	}, app)
 	:
 	require('http').createServer(app);

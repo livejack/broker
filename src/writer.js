@@ -186,8 +186,7 @@ function balance(msg, namespace, config) {
 				from: config.server
 			},
 			timeout: parseInt(config.btimeout) || 10000,
-			body: msg,
-			json: true
+			json: msg
 		}).catch(function(err) {
 			console.error("Balance error to", url, err);
 			cns.errors++;

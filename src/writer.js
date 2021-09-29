@@ -68,7 +68,9 @@ exports.master = function(nsp, namespace, config) {
 exports.slave = function(nsp, namespace, config) {
 	// listen to master messages and write message to clients in namespace room
 	const nsconfig = config.namespaces[namespace];
-	const client = ioclient(config.servers[config.server][0].href + namespace);
+	const clientUrl = new URL(config.servers[config.server][0]);
+	clientUrl.pathname = namespace;
+	const client = ioclient(clientUrl.href);
 
 	client.on('connect', function() {
 		client.emit('join', {room: '*'});
@@ -180,18 +182,17 @@ exports.post = function(spaces) {
 
 function balance(msg, namespace, config) {
 	if (!config.servers || config.servers.length == 0) return;
-	const us = config.servers[config.server][config.node].href;
+	const us = config.servers[config.server][config.node];
 	const cns = config.namespaces[namespace];
 	return Promise.all(config.servers.map(function(item) {
-		const server = item[0].href;
-		if (server == us) return Promise.resolve();
-		const url = server + namespace;
-		return got.post(url, {
-			query: {
-				token: cns.token,
-				balanced: true,
-				from: config.server
-			},
+		const server = item[0];
+		if (server.href == us.href) return Promise.resolve();
+		const clientUrl = new URL(server);
+		clientUrl.pathname = namespace;
+		clientUrl.searchParams.set('token', cns.token);
+		clientUrl.searchParams.set('balanced', 'true');
+		clientUrl.searchParams.set('from', config.server);
+		return got.post(clientUrl, {
 			timeout: parseInt(config.btimeout) || 10000,
 			json: msg
 		}).catch(function(err) {

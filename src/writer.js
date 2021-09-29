@@ -203,15 +203,19 @@ function balance(msg, namespace, config) {
 }
 
 function getRoom(msg) {
-	let room = msg.room;
-	if (!room) {
-		// compatibility with previous broker
-		room = msg.key;
-	}
-
-	if (!room && msg.parents && msg.parents.length > 0) {
+	let room;
+	if (msg.parents) {
 		// compatibility with raja
-		room = msg.parents.slice(-1).pop();
+		room = msg.parents[msg.parents.length - 1];
+	}
+	if (!room) {
+		if (msg.key) {
+			// compatibility with old broker version
+			room = msg.key;
+		} else {
+			// this is current version
+			room = msg.room;
+		}
 	}
 	return room;
 }

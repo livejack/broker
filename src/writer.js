@@ -13,14 +13,21 @@ exports.master = function(nsp, namespace, config) {
 	const nsconfig = config.namespaces[namespace];
 	nsp.on('connection', function(socket) {
 		socket.on('join', function(data) {
-			if (!data.room) return console.error("Need a room to join " + JSON.stringify(data));
-			if (socket.backlog) socket.backlog(data.mtime);
+			if (!data.room) {
+				return console.error("Need a room to join " + JSON.stringify(data));
+			}
+			if (socket.backlog) {
+				socket.backlog(data.mtime);
+			}
 			if (data.bearer) {
 				initScopes(socket, data.bearer, nsconfig, data.room, function(err) {
 					if (err) {
 						// errors do not prevent from joining room
-						if (err.name == 'TokenExpiredError') console.info("token expired", namespace);
-						else console.error(err);
+						if (err.name == 'TokenExpiredError') {
+							console.info("token expired", namespace);
+						} else {
+							console.error(err);
+						}
 					}
 					socket.join(data.room);
 				});

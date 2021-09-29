@@ -47,8 +47,6 @@ config.servers = config.servers.map(function(val) {
 });
 
 config.site = config.servers[config.server][config.node];
-config.site.port = config.site.port || 80;
-config.listen = config.listen || config.site.port;
 
 const server = config.site.protocol == "https:" ?
 	require('https').createServer({

@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 const ioclient = require('socket.io-client');
 const got = require('got');
 const jwt = require('jsonwebtoken');

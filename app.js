@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 // always resolve paths relative to app.js directory
 process.chdir(__dirname);
 

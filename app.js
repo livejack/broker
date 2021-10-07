@@ -71,9 +71,9 @@ require('./src/express.js')(app, server);
 
 process.title = format("ws-%s-%d-%d", app.settings.env, config.server, config.node);
 process.on('uncaughtException', function(err) {
-	console.log(err.stack || err.message || err);
+	console.error(err.stack || err.message || err);
 });
 
 server.listen(config.site.port);
 
-console.log("%s\n%s", process.title, config.site.href);
+console.info("%s\n%s", process.title, config.site.href);

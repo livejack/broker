@@ -23,7 +23,7 @@
     "xdg-basedir": "^4.0.0"
   },
   "devDependencies": {
-    "@kapouer/eslint-config": "^1.6.0"
+    "@kapouer/eslint-config": "^1.6.1"
   },
   "main": "src/express.js",
   "eslintConfig": {

@@ -195,7 +195,7 @@ function balance(msg, namespace, config) {
 			timeout: parseInt(config.btimeout) || 10000,
 			json: msg
 		}).catch(function(err) {
-			console.error("Balance error to", url, err);
+			console.error("Balance error to", clientUrl.toString(), err);
 			cns.errors++;
 		});
 	}));

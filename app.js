@@ -74,6 +74,6 @@ process.on('uncaughtException', function(err) {
 	console.log(err.stack || err.message || err);
 });
 
-server.listen(config.listen);
+server.listen(config.site.port);
 
-console.log("%s\n%s", process.title, app.settings.site.href);
+console.log("%s\n%s", process.title, config.site.href);

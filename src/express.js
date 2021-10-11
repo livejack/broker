@@ -62,33 +62,27 @@ module.exports = function(app, server) {
 	});
 
 	function writeStats(client, config) {
+		const metrics = getStats(client, config);
+		client.write(metrics, function(err) {
+			if (err) return console.error("Error writing metrics", err);
+		});
+	}
+
+	function getStats(client, config) {
 		const metrics = {};
-		Object.keys(config.graphite.namespaces).forEach(function (namespace) {
-			if (config.namespaces[namespace] == null) {
-				console.warn("Unknown namespace in graphite.namespaces:", namespace);
-				return;
-			}
+		for (const namespace in config.namespaces) {
+			if (!config.graphite.namespaces.includes(namespace)) continue;
 			const nsp = io.of(namespace);
-			const connected = nsp.connected;
 			const metric = [
 				config.graphite.bucket,
 				namespace,
 				config.server,
 				config.node
 			].join('.');
-			let pollings = 0;
-			let websockets = 0;
-			for (const k in connected) {
-				if (connected[k].conn.transport.name == "polling") pollings++;
-				else websockets++;
-			}
-			metrics[metric + '.pollings'] = pollings;
-			metrics[metric + '.websockets'] = websockets;
+			metrics[metric + '.clients'] = nsp.sockets.size;
 			metrics[metric + '.errors'] = config.namespaces[namespace].errors || 0;
-		});
-		client.write(metrics, function(err) {
-			if (err) return console.error("Error writing metrics", err);
-		});
+		}
+		return metrics;
 	}
 };
 

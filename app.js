@@ -4,8 +4,7 @@ process.chdir(__dirname);
 const express = require('express');
 const ini = require('./src/express-ini');
 const format = require('util').format;
-const readfile = require('fs').readFileSync;
-const mkdirp = require('mkdirp');
+const { readFileSync, mkdirSync } = require('fs');
 
 // APP
 const app = express();
@@ -18,7 +17,7 @@ Object.keys(config.namespaces).forEach((ns) => {
 		token: config.namespaces[ns]
 	};
 	try {
-		obj.publicKey = readfile('private/' + ns + '.pem');
+		obj.publicKey = readFileSync('private/' + ns + '.pem');
 	} catch(ex) {
 		console.warn("No public key for", ns);
 	}
@@ -50,17 +49,18 @@ config.site = config.servers[config.server][config.node];
 
 const server = config.site.protocol == "https:" ?
 	require('https').createServer({
-		key:readfile(format(`${config.dirs.config}/%s/privkey.pem`, config.site.hostname)),
-		cert:readfile(format(`${config.dirs.config}/%s/fullchain.pem`, config.site.hostname))
+		key:readFileSync(format(`${config.dirs.config}/%s/privkey.pem`, config.site.hostname)),
+		cert:readFileSync(format(`${config.dirs.config}/%s/fullchain.pem`, config.site.hostname))
 	}, app)
 	:
 	require('http').createServer(app);
 
 const acmeRoot = '/.well-known/acme-challenge';
-mkdirp.sync(__dirname + acmeRoot);
+const acmeDir = `${config.dirs.cache}/acme-challenge`;
+mkdirSync(acmeDir, { recursive: true });
 app.use(
 	acmeRoot,
-	express.static(__dirname + acmeRoot),
+	express.static(acmeDir),
 	(req, res, next) => {
 		console.info("File not found", req.path);
 		res.sendStatus(404);

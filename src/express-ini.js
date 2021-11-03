@@ -15,7 +15,8 @@ module.exports = function(app) {
 	app.settings.version = pkg.version;
 	app.settings.dirs = {
 		data: Path.join(xdg.data, name),
-		config: Path.join(xdg.config, name)
+		config: Path.join(xdg.config, name),
+		cache: Path.join(xdg.cache, name)
 	};
 	const confFile = Path.join(app.settings.dirs.config, `${env}.toml`);
 	const conf = Toml.parse(read(confFile, 'utf-8'));

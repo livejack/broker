@@ -47,11 +47,17 @@ config.servers = config.servers.map((val) => {
 
 config.site = config.servers[config.server][config.node];
 
-const server = config.site.protocol == "https:" ?
-	require('https').createServer({
-		key:readFileSync(format(`${config.dirs.config}/%s/privkey.pem`, config.site.hostname)),
-		cert:readFileSync(format(`${config.dirs.config}/%s/fullchain.pem`, config.site.hostname))
-	}, app)
+const cert = {};
+
+try {
+	cert.key = readFileSync(format(`${config.dirs.config}/%s/privkey.pem`, config.site.hostname));
+	cert.cert = readFileSync(format(`${config.dirs.config}/%s/fullchain.pem`, config.site.hostname));
+} catch (err) {
+	console.info("No certificate is available - will only start on http");
+}
+
+const server = cert.cert && config.site.protocol == "https:" ?
+	require('https').createServer(cert, app)
 	:
 	require('http').createServer(app);
 

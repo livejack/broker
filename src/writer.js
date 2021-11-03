@@ -76,7 +76,7 @@ exports.slave = function(nsp, namespace, config) {
 	});
 
 	client.on('connect_error', (err) => {
-		if (err) console.error(err);
+		if (err) console.error(err.toString());
 	});
 
 	client.on('message', (msg) => {
@@ -91,7 +91,7 @@ exports.slave = function(nsp, namespace, config) {
 	});
 
 	client.on('error', (err) => {
-		if (err) console.error("Error in client", err);
+		if (err) console.error("Error in client", err.toString());
 	});
 
 	nsp.on('connection', (socket) => {

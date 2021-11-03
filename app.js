@@ -58,8 +58,18 @@ const server = config.site.protocol == "https:" ?
 const acmeRoot = '/.well-known/acme-challenge';
 const acmeDir = `${config.dirs.cache}/acme-challenge`;
 mkdirSync(acmeDir, { recursive: true });
+let exitTo;
 app.use(
 	acmeRoot,
+	(req, res, next) => {
+		if (!exitTo) {
+			console.info("Restart in 30 seconds after new certificate has been installed");
+			exitTo = setTimeout(() => {
+				process.exit(0);
+			}, 30 * 1000);
+		}
+		next();
+	},
 	express.static(acmeDir),
 	(req, res, next) => {
 		console.info("File not found", req.path);

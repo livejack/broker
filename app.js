@@ -61,29 +61,32 @@ const server = cert.cert && config.site.protocol == "https:" ?
 	:
 	require('http').createServer(app);
 
-const acmeRoot = '/.well-known/acme-challenge';
-let exitTo;
-app.use(
-	acmeRoot,
-	(req, res, next) => {
-		if (!exitTo) {
-			exitTo = setTimeout(() => {
-				console.info("Restarting after successful certbot renew");
-				process.exit(0);
-			}, 30 * 1000);
+if (config.certbot && config.certbot.webroot) {
+	const acmeRoot = '/.well-known/acme-challenge';
+	console.info("Listening for acme challenges:", config.certbot.webroot);
+	let exitTo;
+	app.use(
+		acmeRoot,
+		(req, res, next) => {
+			if (!exitTo) {
+				exitTo = setTimeout(() => {
+					console.info("Restarting after successful certbot renew");
+					process.exit(0);
+				}, (parseInt(config.certbot.timeout) || 15) * 1000);
+			}
+			next();
+		},
+		express.static(config.certbot.webroot),
+		(req, res, next) => {
+			if (exitTo) {
+				clearTimeout(exitTo);
+				exitTo = null;
+			}
+			console.info("File not found", req.path);
+			res.sendStatus(404);
 		}
-		next();
-	},
-	express.static(config.certbotWebroot || "/var/www/certbot"),
-	(req, res, next) => {
-		if (exitTo) {
-			clearTimeout(exitTo);
-			exitTo = null;
-		}
-		console.info("File not found", req.path);
-		res.sendStatus(404);
-	}
-);
+	);
+}
 
 require('./src/express.js')(app, server);
 

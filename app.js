@@ -4,7 +4,7 @@ process.chdir(__dirname);
 const express = require('express');
 const ini = require('./src/express-ini');
 const format = require('util').format;
-const { readFileSync, mkdirSync } = require('fs');
+const { readFileSync } = require('fs');
 
 // APP
 const app = express();
@@ -62,8 +62,6 @@ const server = cert.cert && config.site.protocol == "https:" ?
 	require('http').createServer(app);
 
 const acmeRoot = '/.well-known/acme-challenge';
-const acmeDir = `${config.dirs.cache}/acme-challenge`;
-mkdirSync(acmeDir, { recursive: true });
 let exitTo;
 app.use(
 	acmeRoot,
@@ -76,7 +74,7 @@ app.use(
 		}
 		next();
 	},
-	express.static(acmeDir),
+	express.static(config.certbotWebroot || "/var/www/certbot"),
 	(req, res, next) => {
 		console.info("File not found", req.path);
 		res.sendStatus(404);

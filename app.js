@@ -67,8 +67,8 @@ app.use(
 	acmeRoot,
 	(req, res, next) => {
 		if (!exitTo) {
-			console.info("Restart in 30 seconds after new certificate has been installed");
 			exitTo = setTimeout(() => {
+				console.info("Restarting after successful certbot renew");
 				process.exit(0);
 			}, 30 * 1000);
 		}
@@ -76,6 +76,10 @@ app.use(
 	},
 	express.static(config.certbotWebroot || "/var/www/certbot"),
 	(req, res, next) => {
+		if (exitTo) {
+			clearTimeout(exitTo);
+			exitTo = null;
+		}
 		console.info("File not found", req.path);
 		res.sendStatus(404);
 	}

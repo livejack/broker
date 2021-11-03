@@ -56,14 +56,14 @@ module.exports = function(app, server) {
 
 	app.post('/:namespace', writer.post(spaces));
 
-	app.use(function(err, req, res, next) {
+	app.use((err, req, res, next) => {
 		if (err) console.error(err.stack || err.message || err);
 		next();
 	});
 
 	function writeStats(client, config) {
 		const metrics = getStats(client, config);
-		client.write(metrics, function(err) {
+		client.write(metrics, (err) => {
 			if (err) return console.error("Error writing metrics", err);
 		});
 	}

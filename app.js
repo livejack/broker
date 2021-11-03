@@ -12,7 +12,7 @@ const app = express();
 
 const config = ini(app);
 
-Object.keys(config.namespaces).forEach(function(ns) {
+Object.keys(config.namespaces).forEach((ns) => {
 	const obj = {
 		namespace: ns,
 		token: config.namespaces[ns]
@@ -33,10 +33,10 @@ if (!argv.length == 2) throw new Error("node app.js <server>-<node>");
 config.server = argv[0];
 config.node = argv[1];
 
-config.servers = config.servers.map(function(val) {
+config.servers = config.servers.map((val) => {
 	const list = val.split(' ');
 	const hostname = list.shift();
-	const nodes = list.map(function (item) {
+	const nodes = list.map((item) => {
 		const itemUrl = new URL(`http://${hostname}`);
 		const parts = item.split(':');
 		itemUrl.port = parseInt(parts.pop());
@@ -61,7 +61,7 @@ mkdirp.sync(__dirname + acmeRoot);
 app.use(
 	acmeRoot,
 	express.static(__dirname + acmeRoot),
-	function(req, res, next) {
+	(req, res, next) => {
 		console.info("File not found", req.path);
 		res.sendStatus(404);
 	}
@@ -70,7 +70,7 @@ app.use(
 require('./src/express.js')(app, server);
 
 process.title = format("ws-%s-%d-%d", app.settings.env, config.server, config.node);
-process.on('uncaughtException', function(err) {
+process.on('uncaughtException', (err) => {
 	console.error(err.stack || err.message || err);
 });
 

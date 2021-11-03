@@ -10,8 +10,8 @@ const jwt = require('jsonwebtoken');
 exports.master = function(nsp, namespace, config) {
 	// connect clients of this node to namespace room
 	const nsconfig = config.namespaces[namespace];
-	nsp.on('connection', function(socket) {
-		socket.on('join', function(data) {
+	nsp.on('connection', (socket) => {
+		socket.on('join', (data) => {
 			if (!data.room) {
 				return console.error("Need a room to join " + JSON.stringify(data));
 			}
@@ -19,7 +19,7 @@ exports.master = function(nsp, namespace, config) {
 				socket.backlog(data.mtime);
 			}
 			if (data.bearer) {
-				initScopes(socket, data.bearer, nsconfig, data.room, function(err) {
+				initScopes(socket, data.bearer, nsconfig, data.room, (err) => {
 					if (err) {
 						// errors do not prevent from joining room
 						if (err.name == 'TokenExpiredError') {
@@ -34,12 +34,12 @@ exports.master = function(nsp, namespace, config) {
 				socket.join(data.room);
 			}
 		});
-		socket.on('leave', function(data) {
+		socket.on('leave', (data) => {
 			socket.leave(data.room);
 		});
 		// messages written to this master node are distributed to its rooms,
 		// to slave nodes (by the same canal), and using POST to other master nodes
-		socket.on('message', function(msg) {
+		socket.on('message', (msg) => {
 			if (!socket.request._query) {
 				return console.error("_query object has disappeared");
 			}
@@ -56,7 +56,7 @@ exports.master = function(nsp, namespace, config) {
 				// nsocket is the clock
 				msg.mtime = (new Date()).toISOString();
 			}
-			setImmediate(function() {
+			setImmediate(() => {
 				nsp.to('*').to(room).emit('message', msg);
 				balance(msg, namespace, config);
 			});
@@ -71,18 +71,18 @@ exports.slave = function(nsp, namespace, config) {
 	clientUrl.pathname = namespace;
 	const client = ioclient(clientUrl.href);
 
-	client.on('connect', function() {
+	client.on('connect', () => {
 		client.emit('join', {room: '*'});
 	});
 
-	client.on('connect_error', function(err) {
+	client.on('connect_error', (err) => {
 		if (err) console.error(err);
 	});
 
-	client.on('message', function(msg) {
+	client.on('message', (msg) => {
 		const room = getRoom(msg);
 		if (room) {
-			setImmediate(function() {
+			setImmediate(() => {
 				nsp.to('*').to(room).emit('message', msg);
 			});
 		} else {
@@ -90,13 +90,13 @@ exports.slave = function(nsp, namespace, config) {
 		}
 	});
 
-	client.on('error', function(err) {
+	client.on('error', (err) => {
 		if (err) console.error("Error in client", err);
 	});
 
-	nsp.on('connection', function(socket) {
+	nsp.on('connection', (socket) => {
 		// connect clients of this node to namespace room
-		socket.on('join', function(data) {
+		socket.on('join', (data) => {
 			if (socket.backlog) socket.backlog(data.mtime);
 			//if (data.bearer) {
 			//	initScopes(socket, data.bearer, nsconfig, data.room, function(err) {
@@ -107,10 +107,10 @@ exports.slave = function(nsp, namespace, config) {
 			socket.join(data.room);
 			//}
 		});
-		socket.on('leave', function(data) {
+		socket.on('leave', (data) => {
 			socket.leave(data.room);
 		});
-		socket.on('message', function(msg) {
+		socket.on('message', (msg) => {
 			if (!socket.request._query) {
 				return console.error("_query object has disappeared");
 			}
@@ -127,7 +127,7 @@ exports.slave = function(nsp, namespace, config) {
 				// nsocket is the clock
 				msg.mtime = (new Date()).toISOString();
 			}
-			setImmediate(function() {
+			setImmediate(() => {
 				balance(msg, namespace, config);
 			});
 		});
@@ -168,7 +168,7 @@ exports.post = function(spaces) {
 		} else {
 			res.sendStatus(204);
 		}
-		setImmediate(function() {
+		setImmediate(() => {
 			// write message to this node room
 			if (config.node == 0) nsp.to('*').to(room).emit('message', msg);
 			// balance to other master nodes if needed
@@ -183,7 +183,7 @@ function balance(msg, namespace, config) {
 	if (!config.servers || config.servers.length == 0) return;
 	const us = config.servers[config.server][config.node];
 	const cns = config.namespaces[namespace];
-	return Promise.all(config.servers.map(function(item) {
+	return Promise.all(config.servers.map((item) => {
 		const server = item[0];
 		if (server.href == us.href) return Promise.resolve();
 		const clientUrl = new URL(server);
@@ -194,7 +194,7 @@ function balance(msg, namespace, config) {
 		return got.post(clientUrl, {
 			timeout: parseInt(config.btimeout) || 10000,
 			json: msg
-		}).catch(function(err) {
+		}).catch((err) => {
 			console.error("Balance error to", clientUrl.toString(), err);
 			cns.errors++;
 		});
@@ -225,7 +225,7 @@ function checkScopes(socketScopes, room, scopes) {
 	if (!rscopes) return false;
 	scopes = scopes || ["public"];
 	// make sure socket has write permissions for all those scopes
-	return scopes.every(function(scope) {
+	return scopes.every((scope) => {
 		const perms = rscopes[scope];
 		if (!perms) return false;
 		return perms.add || perms.write;
@@ -239,7 +239,7 @@ function initScopes(socket, bearer, nsconfig, room, cb) {
 	jwt.verify(bearer, nsconfig.publicKey, {
 		algorithm: 'RS256',
 		issuer: nsconfig.namespace
-	}, function(err, obj) {
+	}, (err, obj) => {
 		if (err) return cb(err);
 		const scopes = obj.scopes;
 		if (!scopes) return cb();
@@ -254,7 +254,7 @@ function initScopes(socket, bearer, nsconfig, room, cb) {
 				delete rscopes.deletion;
 			}
 			const delay = expiration * 1000 - Date.now();
-			if (delay > 0) rscopes.deletion = setTimeout(function() {
+			if (delay > 0) rscopes.deletion = setTimeout(() => {
 				delete rscopes.deletion;
 				delete spocks[room];
 			}, delay);

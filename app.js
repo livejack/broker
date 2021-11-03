@@ -3,7 +3,6 @@ process.chdir(__dirname);
 
 const express = require('express');
 const ini = require('./src/express-ini');
-const format = require('util').format;
 const { readFileSync, mkdirSync } = require('fs');
 
 // APP
@@ -92,7 +91,7 @@ if (config.certbot && config.certbot.webroot) {
 
 require('./src/express.js')(app, server);
 
-process.title = format("ws-%s-%d-%d", app.settings.env, config.server, config.node);
+process.title = `ws-${app.settings.env}-${config.server}-${config.node}`;
 process.on('uncaughtException', (err) => {
 	console.error(err.stack || err.message || err);
 });

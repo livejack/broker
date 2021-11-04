@@ -3,6 +3,7 @@ process.chdir(__dirname);
 
 const express = require('express');
 const ini = require('./src/express-ini');
+const path = require('path');
 const { readFileSync, mkdirSync } = require('fs');
 
 // APP
@@ -62,28 +63,14 @@ const server = cert.cert && config.site.protocol == "https:" ?
 	:
 	require('http').createServer(app);
 
-if (config.certbot && config.certbot.webroot) {
-	const acmeRoot = '/.well-known/acme-challenge';
-	console.info("Listening for acme challenges:", config.certbot.webroot);
-	let exitTo;
+const webroot = (config.certbot || {}).webroot;
+if (webroot) {
+	const acmepath = '/.well-known/acme-challenge';
+	console.info("Listening for acme challenges:", webroot);
 	app.use(
-		acmeRoot,
+		acmepath,
+		express.static(path.join(webroot, acmepath)),
 		(req, res, next) => {
-			if (!exitTo) {
-				exitTo = setTimeout(() => {
-					console.info("Restarting after successful certbot renew");
-					process.exit(0);
-				}, (parseInt(config.certbot.timeout) || 15) * 1000);
-			}
-			next();
-		},
-		express.static(config.certbot.webroot),
-		(req, res, next) => {
-			if (exitTo) {
-				clearTimeout(exitTo);
-				exitTo = null;
-			}
-			console.info("File not found", req.path);
 			res.sendStatus(404);
 		}
 	);

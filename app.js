@@ -63,6 +63,14 @@ const server = cert.cert && config.site.protocol == "https:" ?
 	:
 	require('http').createServer(app);
 
+app.get('/', (req, res, next) => {
+	res.json({
+		version: config.version,
+		server: config.server,
+		node: config.node
+	});
+});
+
 const webroot = (config.certbot || {}).webroot;
 if (webroot) {
 	const acmepath = '/.well-known/acme-challenge';

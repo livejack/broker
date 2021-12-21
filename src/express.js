@@ -9,7 +9,7 @@ module.exports = function(app, server) {
 	if (!config.servers) config.servers = [];
 
 	IoServer.Server.prototype.serve = require('./serve-client.js');
-	const io = IoServer(server, {
+	const serverOpts = {
 		wsEngine: require("eiows").Server,
 		serveClient: true,
 		clientTracking: false,
@@ -19,8 +19,14 @@ module.exports = function(app, server) {
 			origin: true,
 			methods: ["GET", "POST"]
 		}
-	});
-	io.adapter(backlog({ cacheSize: 300, logSize: 1000 }));
+	};
+	if (config.pingInterval) serverOpts.pingInterval = config.pingInterval;
+	const io = IoServer(server, serverOpts);
+
+	io.adapter(backlog({
+		cacheSize: config.cache || 300,
+		logSize: config.log || 1000
+	}));
 
 	const spaces = {};
 

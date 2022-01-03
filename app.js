@@ -11,17 +11,8 @@ const app = express();
 
 const config = ini(app);
 
-Object.keys(config.namespaces).forEach((ns) => {
-	const obj = {
-		namespace: ns,
-		token: config.namespaces[ns]
-	};
-	try {
-		obj.publicKey = readFileSync('private/' + ns + '.pem');
-	} catch(ex) {
-		console.warn("No public key for", ns);
-	}
-	config.namespaces[ns] = obj;
+Object.entries(config.namespaces).forEach(([namespace, token]) => {
+	config.namespaces[namespace] = { namespace, token };
 });
 
 const argv = (process.argv.length == 3 ? process.argv[2] : "0-0")

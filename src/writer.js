@@ -1,6 +1,5 @@
 const ioclient = require('socket.io-client');
 const got = require('got');
-const jwt = require('jsonwebtoken');
 
 // if node > 0 connect to node 0 room * as a slave
 // and broadcast all messages that come from that slave to its own nsp
@@ -18,21 +17,7 @@ exports.master = function(nsp, namespace, config) {
 			if (socket.backlog) {
 				socket.backlog(data.mtime);
 			}
-			if (data.bearer) {
-				initScopes(socket, data.bearer, nsconfig, data.room, (err) => {
-					if (err) {
-						// errors do not prevent from joining room
-						if (err.name == 'TokenExpiredError') {
-							console.info("token expired", namespace);
-						} else {
-							console.error(err);
-						}
-					}
-					socket.join(data.room);
-				});
-			} else {
-				socket.join(data.room);
-			}
+			socket.join(data.room);
 		});
 		socket.on('leave', (data) => {
 			socket.leave(data.room);
@@ -232,34 +217,3 @@ function checkScopes(socketScopes, room, scopes) {
 	});
 }
 
-function initScopes(socket, bearer, nsconfig, room, cb) {
-	// wrong assumption: socket.scopes is populated when joining a room,
-	// where it should be populated upon connection
-	if (!nsconfig.publicKey) return cb("No public key for that namespace " + nsconfig.namespace);
-	jwt.verify(bearer, nsconfig.publicKey, {
-		algorithm: 'RS256',
-		issuer: nsconfig.namespace
-	}, (err, obj) => {
-		if (err) return cb(err);
-		const scopes = obj.scopes;
-		if (!scopes) return cb();
-		let spocks = socket.request.scopes;
-		if (!spocks) spocks = socket.request.scopes = {};
-		const rscopes = spocks[room] || {};
-		// handle expiration
-		const expiration = parseInt(obj.exp);
-		if (!Number.isNaN(expiration)) { // do not handle expiration for now
-			if (rscopes.deletion) {
-				clearTimeout(rscopes.deletion);
-				delete rscopes.deletion;
-			}
-			const delay = expiration * 1000 - Date.now();
-			if (delay > 0) rscopes.deletion = setTimeout(() => {
-				delete rscopes.deletion;
-				delete spocks[room];
-			}, delay);
-		}
-		spocks[room] = scopes;
-		cb();
-	});
-}

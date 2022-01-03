@@ -2,9 +2,9 @@
 process.chdir(__dirname);
 
 const express = require('express');
-const ini = require('./src/express-ini');
 const path = require('path');
-const { readFileSync, mkdirSync } = require('fs');
+const ini = require('./src/express-ini');
+const certificates = require('./src/certificates');
 
 // APP
 const app = express();
@@ -38,16 +38,7 @@ config.servers = config.servers.map((val) => {
 
 config.site = config.servers[config.server][config.node];
 
-const cert = {};
-
-try {
-	const certPath = `${config.dirs.config}/${config.site.hostname}`;
-	mkdirSync(certPath, { recursive: true });
-	cert.key = readFileSync(`${certPath}/privkey.pem`);
-	cert.cert = readFileSync(`${certPath}/fullchain.pem`);
-} catch (err) {
-	console.info("No certificate is available - will only start on http", err.toString());
-}
+const cert = certificates.load(`${config.dirs.config}/${config.site.hostname}`);
 
 const server = cert.cert && config.site.protocol == "https:" ?
 	require('https').createServer(cert, app)
